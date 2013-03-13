@@ -1,12 +1,12 @@
 file_server
 ==
 
-**file_server** is a Dart sample HTTP server application. Do not use this code for actual applications. This is a code
+**file_server** is a Dart sample HTTP file server application. Do not use this code without security enhansments for actual applications. This is a code
  sample and an attachment
-to the ["Dart Language Gide"](www.cresc.co.jp/tech/java/Google_Dart/DartLanguageGuide.pdf) written in Japanese.
+to the ["Dart Language Gide"](http://www.cresc.co.jp/tech/java/Google_Dart/DartLanguageGuide.pdf) written in Japanese.
 
-ã“ã®ã‚µãƒ³ãƒ—ãƒ«ã¯[ã€Œãƒ—ãƒ­ã‚°ãƒ©ãƒŸãƒ³ã‚°è¨€èªDartã®åŸºç¤ã€](http://www.cresc.co.jp/tech/java/Google_Dart/DartLanguageGuide_about.html)ã®
-æ·»ä»˜è³‡æ–™ã§ã™ã€‚è©³ç´°ã¯ã€ŒHTTPã‚µãƒ¼ãƒ (HttpServer)ã€ã®ç« ã®ã€Œãƒ•ã‚¡ã‚¤ãƒ«ãƒ»ã‚µãƒ¼ãƒã€ã®ç¯€ã‚’ã”è¦§ãã ã•ã„ã€‚
+‚±‚ÌƒTƒ“ƒvƒ‹‚Í[uƒvƒƒOƒ‰ƒ~ƒ“ƒOŒ¾ŒêDart‚ÌŠî‘bv](http://www.cresc.co.jp/tech/java/Google_Dart/DartLanguageGuide_about.html)‚Ì
+“Y•t‘—¿‚Å‚·BÚ×‚ÍuHTTPƒT[ƒo (HttpServer)v‚ÌÍ‚Ìuƒtƒ@ƒCƒ‹EƒT[ƒov‚Ìß‚ğ‚²——‚­‚¾‚³‚¢B
 
 
 ### Installing ###
