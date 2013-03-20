@@ -16,7 +16,7 @@
     Revised Oct. 2012 to incorporate M1 changes.
     Revised Feb. 2013 to incorporate newly added dart:async library.
     Revised Feb. 2013 to incorporate M3 changes.
-    Modified March 2013, for Github upload
+    Modified March 2013, modified for Github upload and incorporated API changes
 */
 
 
@@ -57,7 +57,7 @@ void requestReceivedHandler(HttpRequest request) {
     request
       .transform(new StringDecoder())
       .listen(
-          (String str){bodyString = bodyString.concat(str);},
+          (String str){bodyString = bodyString + str;},
           onDone: (){
             completer.complete("body data received");},
           onError: (e){
@@ -119,7 +119,7 @@ class FileHandler {
       File file = new File(fileName);
       String mimeType;
       if (file.existsSync()) {
-          mimeType = mime.mime(fileName);
+        mimeType = mime.mime(fileName);
         if (mimeType == null) mimeType = 'text/plain; charset=UTF-8'; // dafault
         response.headers.set('Content-Type', mimeType);
 //      response.headers.set('Content-Disposition', 'attachment; filename=\'${fileName}\'');
@@ -160,7 +160,7 @@ class BadRequestHandler {
     response
       ..statusCode = HttpStatus.BAD_REQUEST
       ..headers.set('Content-Type', 'text/html; charset=UTF-8')
-      ..addString(badRequestPage)
+      ..write(badRequestPage)
       ..close();
   }
 }
@@ -185,7 +185,7 @@ class NotFoundHandler {
     response
       ..statusCode = HttpStatus.NOT_FOUND
       ..headers.set('Content-Type', 'text/html; charset=UTF-8')
-      ..addString(notFoundPage)
+      ..write(notFoundPage)
       ..close();
   }
 }
@@ -197,7 +197,7 @@ class InitialPageHandler {
     HttpResponse response = request.response;
     response
     ..headers.set('Content-Type', 'text/html; charset=UTF-8')
-    ..addString(createInitialPageHtml(warning).toString())
+    ..write(createInitialPageHtml(warning).toString())
     ..close();
   }
 
