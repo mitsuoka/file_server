@@ -49,7 +49,7 @@ void main() {
 
 
 void requestReceivedHandler(HttpRequest request) {
-  HttpResponse response = request.response;
+  final HttpResponse response = request.response;
   String bodyString = "";      // request body byte data
   var completer = new Completer();
   if (request.method == "GET") { completer.complete("query string data received");
@@ -109,7 +109,7 @@ class FileHandler {
 
   void onRequest(HttpRequest request, [String fileName = null]) {
     try {
-      HttpResponse response = request.response;
+      final HttpResponse response = request.response;
       if (fileName == null) {
         fileName = request.queryParameters['fileName'];
       }
@@ -153,11 +153,10 @@ class BadRequestHandler {
 </body></html>''';
 
   void onRequest(HttpRequest request, [String badRequestPage = null]){
-    HttpResponse response = request.response;
     if (badRequestPage == null) {
       badRequestPage = badRequestPageHtml;
     }
-    response
+    request.response
       ..statusCode = HttpStatus.BAD_REQUEST
       ..headers.set('Content-Type', 'text/html; charset=UTF-8')
       ..write(badRequestPage)
@@ -178,11 +177,10 @@ class NotFoundHandler {
 </body></html>''';
 
   void onRequest(HttpRequest request, [String notFoundPage = null]){
-    HttpResponse response = request.response;
     if (notFoundPage == null) {
       notFoundPage = notFoundPageHtml;
     }
-    response
+    request.response
       ..statusCode = HttpStatus.NOT_FOUND
       ..headers.set('Content-Type', 'text/html; charset=UTF-8')
       ..write(notFoundPage)
@@ -194,8 +192,7 @@ class NotFoundHandler {
 class InitialPageHandler {
 
   void onRequest(HttpRequest request, [String warning = '']) {
-    HttpResponse response = request.response;
-    response
+    request.response
     ..headers.set('Content-Type', 'text/html; charset=UTF-8')
     ..write(createInitialPageHtml(warning).toString())
     ..close();
@@ -244,8 +241,8 @@ class InitialPageHandler {
 List<String> fileList(String pathName) {
   List<String> fileNames = [];
   var path = new Path(pathName);
-  var directory = new Directory.fromPath(path);
-  List<FileSystemEntity> fileList = directory.listSync(recursive: true);
+  final directory = new Directory.fromPath(path);
+  final List<FileSystemEntity> fileList = directory.listSync(recursive: true);
   fileList.forEach((file){
     if (file is File) {
       fileNames.add(file.path.replaceAll(r'\', '/'));
@@ -330,7 +327,7 @@ String urlDecode(String s){
    var ol = new List<int>();
    for (i = 0; i < s.length; i++) {
      if (s[i].codeUnitAt(0) == 0x2b) { ol.add(0x20); // convert + to space
-     } else if (s[i].codeUnitAt(0) == 0x25) {        // convert hex bytes to a single bite
+     } else if (s[i].codeUnitAt(0) == 0x25) { // convert hex bytes to a single byte
        i++;
        p = s[i].toUpperCase().codeUnitAt(0) - 0x30;
        if (p > 9) p = p - 7;
