@@ -97,8 +97,9 @@ void requestReceivedHandler(HttpRequest request) {
           new InitialPageHandler().onRequest(request);
         }
       }
-    }on Exception catch(err) {
+    } catch(err, st) {
       print('File Handler error : $err.toString()');
+      print(st);
     }
   });
 }
@@ -135,8 +136,9 @@ class FileHandler {
         }
         new NotFoundHandler().onRequest(request);
       }
-    } on Exception catch (err) {
+    } catch (err, st) {
       print('File Handler error : $err.toString()');
+      print(st);
     }
   }
 }
