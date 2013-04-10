@@ -36,9 +36,6 @@ specifying `resources/readme.text` is equivalent to
 Likewise, `resources/images/Dart_Logo.jpg` is equivalent to 
 `C:/dart_apps_server/file_server/resources/images/Dart_Logo.jpg`.
 
-In case of downloading HTML files through the download page, browsers will not execute 
-scripts in the downloaded HTML file.
-
 ### License ###
 This sample is licensed under [MIT License][MIT].
 [MIT]: http://www.opensource.org/licenses/mit-license.php

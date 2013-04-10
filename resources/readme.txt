@@ -31,6 +31,3 @@ specifing Ågresources/readme.textÅh is equivalent to
 
 Likewise, Ågresources/images/Dart_Logo.jpgÅh is equivalent to 
 ÅgC:/dart_apps_server/file_server/resources/images/Dart_Logo.jpgÅh.
-
-In case of downloading HTML files through the download page, browsers will not execute 
-scripts in the downloaded HTML file.
