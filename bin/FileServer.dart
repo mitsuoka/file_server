@@ -10,13 +10,14 @@
       https://gist.github.com/2564561
       https://gist.github.com/2564562
       http://www.cresc.co.jp/tech/java/Google_Dart/DartLanguageGuide.pdf (in Japanese)
-    Modified May 2012, by Terry Mitsuoka.
-    Revised July 2012 to include MIME library.
+    Modified May  2012, by Terry Mitsuoka.
+    Revised July  2012 to include MIME library.
     Revised Sept. 2012 to incorporate catch syntax change.
-    Revised Oct. 2012 to incorporate M1 changes.
-    Revised Feb. 2013 to incorporate newly added dart:async library.
-    Revised Feb. 2013 to incorporate M3 changes.
+    Revised Oct.  2012 to incorporate M1 changes.
+    Revised Feb.  2013 to incorporate newly added dart:async library.
+    Revised Feb.  2013 to incorporate M3 changes.
     Modified March 2013, modified for Github upload and incorporated API changes
+    Modified June 2013, fixed API changes (request.queryParameters, file path etc.)
 */
 
 
@@ -52,8 +53,10 @@ void requestReceivedHandler(HttpRequest request) {
   final HttpResponse response = request.response;
   String bodyString = "";      // request body byte data
   var completer = new Completer();
-  if (request.method == "GET") { completer.complete("query string data received");
-  } else if (request.method == "POST") {
+  if (request.method == "GET") {
+    completer.complete("query string data received");
+  }
+  else if (request.method == "POST") {
     request
       .transform(new StringDecoder())
       .listen(
@@ -76,24 +79,24 @@ void requestReceivedHandler(HttpRequest request) {
         print(createLogMessage(request, bodyString));
       }
       // selsect requests with 'fileName' query
-      if (request.queryParameters['fileName'] != null) {
+      if (request.uri.queryParameters['fileName'] != null) {
         new FileHandler().onRequest(request);
       } else
-      // selest request without 'fileName' query
+      // select request without 'fileName' query
       {
         // select direct designation of the file
         String fName = request.uri.path.replaceFirst(REQUEST_PATH, '');
         if (fName.length > 2) {
           fName = fName.substring(1);
           if (fName.contains('resources/')) {
-            new FileHandler().onRequest(request, fName);
+            new FileHandler().onRequest(request, '../' + fName);
           }
           else new InitialPageHandler().onRequest(request,
               'you can access files in resouces/ only!');
         }
         // new client, send initial page
         else {
-//        new FileHandler().onRequest(request, 'resources/Client.html');
+//        new FileHandler().onRequest(request, '../resources/Client.html');
           new InitialPageHandler().onRequest(request);
         }
       }
@@ -105,19 +108,25 @@ void requestReceivedHandler(HttpRequest request) {
 }
 
 
-// return requested file
+// return requested file to the client
 class FileHandler {
 
   void onRequest(HttpRequest request, [String fileName = null]) {
+    File file;
     try {
       final HttpResponse response = request.response;
       if (fileName == null) {
-        fileName = request.queryParameters['fileName'];
+        fileName = request.uri.queryParameters['fileName'];
+        // check for absolute path
+        file = new File(fileName);
+        if (! file.existsSync()) {
+          fileName = '../' + request.uri.queryParameters['fileName'];
+        }
       }
       if (LOG_REQUESTS) {
         print('Requested file name : $fileName');
       }
-      File file = new File(fileName);
+      file = new File(fileName);
       String mimeType;
       if (file.existsSync()) {
         mimeType = mime.mime(fileName);
@@ -219,9 +228,10 @@ class InitialPageHandler {
       r'''
     <h2>Choose from available files in resources/ directory</h2>
 ''');
-  List<String> fileNames = fileList('resources');
+  List<String> fileNames = fileList('../resources');
   fileNames.forEach((f) {
-    sb.write('    <a href=http://localhost:8080/fserver/${f}>$f<br></a>\n');
+    var fn = '$f'.replaceFirst('../', '');
+    sb.write('    <a href=http://localhost:8080/fserver/${fn}>$fn<br></a>\n');
   });
   sb.write(
       r'''
@@ -271,7 +281,7 @@ request.uri.path : ${request.uri.path}
 request.uri.query : ${request.uri.query}
 request.uri.queryParameters :
 ''');
-  request.queryParameters.forEach((key, value){
+  request.uri.queryParameters.forEach((key, value){
     sb.write("  ${key} : ${value}\n");
   });
   sb.write('''request.cookies :
