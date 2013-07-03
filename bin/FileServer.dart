@@ -18,6 +18,7 @@
     Revised Feb.  2013 to incorporate M3 changes.
     Modified March 2013, modified for Github upload and incorporated API changes
     Modified June 2013, fixed API changes (request.queryParameters, file path etc.)
+    Modified July 2013, modified main() to ruggedize.
 */
 
 
@@ -37,6 +38,11 @@ void main() {
   .then((HttpServer server) {
     server.listen(
         (HttpRequest request) {
+          request.response.done.then((d){
+            if (LOG_REQUESTS) print("sent response to the client for request : ${request.uri}");
+          }).catchError((e) {
+            print("new DateTime.now()} : Error occured while sending response: $e");
+          });
           if (request.uri.path.contains(REQUEST_PATH)) {
             requestReceivedHandler(request);
           }
@@ -44,7 +50,7 @@ void main() {
             new BadRequestHandler().onRequest(request);
           }
         });
-    print("Serving $REQUEST_PATH on http://${HOST}:${PORT}.");
+    print("${new DateTime.now()} : Serving $REQUEST_PATH on http://${HOST}:${PORT}.");
   });
 }
 
