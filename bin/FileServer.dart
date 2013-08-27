@@ -19,6 +19,7 @@
     Modified March 2013, modified for Github upload and incorporated API changes
     Modified June 2013, fixed API changes (request.queryParameters, file path etc.)
     Modified July 2013, modified main() to ruggedize.
+    Modified Aug. 2013, API change (class Path deleted) incorporated.
 */
 
 
@@ -258,8 +259,7 @@ class InitialPageHandler {
 // list files in specified path
 List<String> fileList(String pathName) {
   List<String> fileNames = [];
-  var path = new Path(pathName);
-  final directory = new Directory.fromPath(path);
+  final directory = new Directory(pathName);
   final List<FileSystemEntity> fileList = directory.listSync(recursive: true);
   fileList.forEach((file){
     if (file is File) {
