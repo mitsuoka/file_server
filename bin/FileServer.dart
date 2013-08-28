@@ -19,11 +19,13 @@
     Modified March 2013, modified for Github upload and incorporated API changes
     Modified June 2013, fixed API changes (request.queryParameters, file path etc.)
     Modified July 2013, modified main() to ruggedize.
-    Modified Aug. 2013, API change (class Path deleted) incorporated.
+    Revised Aug.  2013, API change (class Path deleted) incorporated.
+    Revised Aug.  2013, API changes (removed StringDecoder and added dart:convert) fixed
 */
 
 
 import 'dart:io';
+import "dart:convert";
 import '../packages/mime_type/mime_type.dart' as mime;
 import 'dart:utf' as utf;
 import 'dart:async';
@@ -65,7 +67,7 @@ void requestReceivedHandler(HttpRequest request) {
   }
   else if (request.method == "POST") {
     request
-      .transform(new StringDecoder())
+      .transform(UTF8.decoder) // decode the body as UTF
       .listen(
           (String str){bodyString = bodyString + str;},
           onDone: (){
@@ -137,7 +139,7 @@ class FileHandler {
       String mimeType;
       if (file.existsSync()) {
         mimeType = mime.mime(fileName);
-        if (mimeType == null) mimeType = 'text/plain; charset=UTF-8'; // dafault
+        if (mimeType == null) mimeType = 'text/plain; charset=UTF-8'; // default
         response.headers.set('Content-Type', mimeType);
 //      response.headers.set('Content-Disposition', 'attachment; filename=\'${fileName}\'');
         // Get length of the file for Content-Length header.
