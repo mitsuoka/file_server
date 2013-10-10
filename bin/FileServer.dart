@@ -21,13 +21,13 @@
     Modified July 2013, modified main() to ruggedize.
     Revised Aug.  2013, API change (class Path deleted) incorporated.
     Revised Aug.  2013, API changes (removed StringDecoder and added dart:convert) fixed
+    Revised Oct.  2013, API change (dart:utf removed) fixed
 */
 
 
 import 'dart:io';
 import "dart:convert";
 import '../packages/mime_type/mime_type.dart' as mime;
-import 'dart:utf' as utf;
 import 'dart:async';
 
 final HOST = '127.0.0.1';
@@ -359,5 +359,5 @@ String urlDecode(String s){
      else { ol.add(s[i].codeUnitAt(0));
      }
    }
-  return utf.decodeUtf8(ol);
+  return UTF8.decode(ol);
 }
