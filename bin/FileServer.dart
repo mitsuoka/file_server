@@ -22,6 +22,7 @@
     Revised Aug.  2013, API change (class Path deleted) incorporated.
     Revised Aug.  2013, API changes (removed StringDecoder and added dart:convert) fixed
     Revised Oct.  2013, API change (dart:utf removed) fixed
+    Revised Nov.  2013, API change (remoteHost -> remoteAddress) fixed
 */
 
 
@@ -278,7 +279,7 @@ StringBuffer createLogMessage(HttpRequest request, [String bodyString]) {
   var sb = new StringBuffer( '''request.headers.host : ${request.headers.host}
 request.headers.port : ${request.headers.port}
 request.connectionInfo.localPort : ${request.connectionInfo.localPort}
-request.connectionInfo.remoteHost : ${request.connectionInfo.remoteHost}
+request.connectionInfo.remoteAddress : ${request.connectionInfo.remoteAddress}
 request.connectionInfo.remotePort : ${request.connectionInfo.remotePort}
 request.method : ${request.method}
 request.persistentConnection : ${request.persistentConnection}
