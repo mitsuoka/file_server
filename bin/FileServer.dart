@@ -1,5 +1,6 @@
 /*
   Dart code sample: Simple file server
+  Runs on Windows.
   1. Download, uncompress and rename the folder to 'file_server'.
   2. Put files you want to send into the file_server/resources folder.
   3. From Dart Editor, File > Open Existing Folder and select this file_server folder.
@@ -23,6 +24,7 @@
     Revised Aug.  2013, API changes (removed StringDecoder and added dart:convert) fixed
     Revised Oct.  2013, API change (dart:utf removed) fixed
     Revised Nov.  2013, API change (remoteHost -> remoteAddress) fixed
+    Revised Aug.  2014, API change (Directory) fixed
 */
 
 
@@ -88,7 +90,7 @@ void requestReceivedHandler(HttpRequest request) {
       if (LOG_REQUESTS) {
         print(createLogMessage(request, bodyString));
       }
-      // selsect requests with 'fileName' query
+      // select requests with 'fileName' query
       if (request.uri.queryParameters['fileName'] != null) {
         new FileHandler().onRequest(request);
       } else
@@ -99,14 +101,14 @@ void requestReceivedHandler(HttpRequest request) {
         if (fName.length > 2) {
           fName = fName.substring(1);
           if (fName.contains('resources/')) {
-            new FileHandler().onRequest(request, '../' + fName);
+            new FileHandler().onRequest(request, fName); // fixed for API chanbe
           }
           else new InitialPageHandler().onRequest(request,
               'you can access files in resouces/ only!');
         }
         // new client, send initial page
         else {
-//        new FileHandler().onRequest(request, '../resources/Client.html');
+//        new FileHandler().onRequest(request, 'resources/Client.html');
           new InitialPageHandler().onRequest(request);
         }
       }
@@ -238,7 +240,7 @@ class InitialPageHandler {
       r'''
     <h2>Choose from available files in resources/ directory</h2>
 ''');
-  List<String> fileNames = fileList('../resources');
+  List<String> fileNames = fileList('resources');
   fileNames.forEach((f) {
     var fn = '$f'.replaceFirst('../', '');
     sb.write('    <a href=http://localhost:8080/fserver/${fn}>$fn<br></a>\n');
