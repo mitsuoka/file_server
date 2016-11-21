@@ -30,7 +30,7 @@
 
 import 'dart:io';
 import "dart:convert";
-import '../packages/mime_type/mime_type.dart' as mime;
+import 'package:mime_type/mime_type.dart' as mime;
 import 'dart:async';
 
 final HOST = '127.0.0.1';
