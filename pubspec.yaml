@@ -1,6 +1,10 @@
 name: file_download_server
-version: 0.1.0
-author: Terry Mitsuoka <TerryMitsuoka@gmail.com>
-description: Dart sample HTTP file server application.
+version: 0.2.0
+author:
+description: Dart2 sample HTTP file server application.
+
+environment:
+  sdk: '>=2.0.0-dev <3.0.0'
+
 dependencies:
   mime_type: any

@@ -4,7 +4,7 @@
   1. Download, uncompress and rename the folder to 'file_server'.
   2. Put files you want to send into the file_server/resources folder.
   3. From Dart Editor, File > Open Existing Folder and select this file_server folder.
-  4. Run the FileServer.dart as server.
+  4. Run the file_server.dart as server.
   5. Access the server from Chrome: http://localhost:8080/fserver
      or directly: http://localhost:8080/fserver/resources/readme.txt
     Ref.
@@ -25,8 +25,8 @@
     Revised Oct.  2013, API change (dart:utf removed) fixed
     Revised Nov.  2013, API change (remoteHost -> remoteAddress) fixed
     Revised Aug.  2014, API change (Directory) fixed
+    Revised Apr.  2019, made compatible with Dart 2
 */
-
 
 import 'dart:io';
 import "dart:convert";
@@ -36,63 +36,60 @@ import 'dart:async';
 final HOST = '127.0.0.1';
 final PORT = 8080;
 final REQUEST_PATH = "/fserver";
+final FAVICON_PATH = "/favicon.ico";
 final LOG_REQUESTS = false;
 
-
 void main() {
-  HttpServer.bind(HOST, PORT)
-  .then((HttpServer server) {
-    server.listen(
-        (HttpRequest request) {
-          request.response.done.then((d){
-            if (LOG_REQUESTS) print("sent response to the client for request : ${request.uri}");
-          }).catchError((e) {
-            print("new DateTime.now()} : Error occured while sending response: $e");
-          });
-          if (request.uri.path.contains(REQUEST_PATH)) {
-            requestReceivedHandler(request);
-          }
-          else {
-            new BadRequestHandler().onRequest(request);
-          }
-        });
-    print("${new DateTime.now()} : Serving $REQUEST_PATH on http://${HOST}:${PORT}.");
+  HttpServer.bind(HOST, PORT).then((HttpServer server) {
+    server.listen((HttpRequest request) {
+      request.response.done.then((d) {
+        if (LOG_REQUESTS)
+          print("sent response to the client for request : ${request.uri}");
+      }).catchError((e) {
+        print("new DateTime.now()} : Error occured while sending response: $e");
+      });
+      if (request.uri.path.contains(REQUEST_PATH)) {
+        requestReceivedHandler(request);
+      } else if (request.uri.path.contains(FAVICON_PATH)) {
+        FileHandler().onRequest(request, "resources/images/favicon.ico");
+      } else {
+        BadRequestHandler().onRequest(request);
+      }
+    });
+    print(
+        "${DateTime.now()} : Serving $REQUEST_PATH on http://${HOST}:${PORT}.");
   });
 }
 
-
 void requestReceivedHandler(HttpRequest request) {
   final HttpResponse response = request.response;
-  String bodyString = "";      // request body byte data
-  var completer = new Completer();
+  String bodyString = ""; // request body byte data
+  var completer = Completer();
   if (request.method == "GET") {
     completer.complete("query string data received");
-  }
-  else if (request.method == "POST") {
-    request
-      .transform(UTF8.decoder) // decode the body as UTF
-      .listen(
-          (String str){bodyString = bodyString + str;},
-          onDone: (){
-            completer.complete("body data received");},
-          onError: (e){
-            print('exeption occured : ${e.toString()}');}
-        );
-  }
-  else {
-    response.statusCode = HttpStatus.METHOD_NOT_ALLOWED;
+  } else if (request.method == "POST") {
+    request.transform(utf8.decoder) // decode the body as UTF
+        .listen((String str) {
+      bodyString = bodyString + str;
+    }, onDone: () {
+      completer.complete("body data received");
+    }, onError: (e) {
+      print('exeption occured : ${e.toString()}');
+    });
+  } else {
+    response.statusCode = HttpStatus.methodNotAllowed;
     response.close();
     return;
   }
   // process the request
-  completer.future.then((data){
+  completer.future.then((data) {
     try {
       if (LOG_REQUESTS) {
         print(createLogMessage(request, bodyString));
       }
       // select requests with 'fileName' query
       if (request.uri.queryParameters['fileName'] != null) {
-        new FileHandler().onRequest(request);
+        FileHandler().onRequest(request);
       } else
       // select request without 'fileName' query
       {
@@ -101,28 +98,26 @@ void requestReceivedHandler(HttpRequest request) {
         if (fName.length > 2) {
           fName = fName.substring(1);
           if (fName.contains('resources/')) {
-            new FileHandler().onRequest(request, fName); // fixed for API chanbe
-          }
-          else new InitialPageHandler().onRequest(request,
-              'you can access files in resouces/ only!');
+            FileHandler().onRequest(request, fName); // fixed for API change
+          } else
+            InitialPageHandler()
+                .onRequest(request, 'you can access files in resouces/ only!');
         }
         // new client, send initial page
         else {
-//        new FileHandler().onRequest(request, 'resources/Client.html');
-          new InitialPageHandler().onRequest(request);
+//        FileHandler().onRequest(request, 'resources/Client.html');
+          InitialPageHandler().onRequest(request);
         }
       }
-    } catch(err, st) {
+    } catch (err, st) {
       print('File Handler error : $err.toString()');
       print(st);
     }
   });
 }
 
-
 // return requested file to the client
 class FileHandler {
-
   void onRequest(HttpRequest request, [String fileName = null]) {
     File file;
     try {
@@ -131,7 +126,7 @@ class FileHandler {
         fileName = request.uri.queryParameters['fileName'];
         // check for absolute path
         file = new File(fileName);
-        if (! file.existsSync()) {
+        if (!file.existsSync()) {
           fileName = '../' + request.uri.queryParameters['fileName'];
         }
       }
@@ -164,7 +159,6 @@ class FileHandler {
   }
 }
 
-
 class BadRequestHandler {
   String badRequestPage;
   static final String badRequestPageHtml = '''
@@ -175,18 +169,17 @@ class BadRequestHandler {
 <p>The request could not be understood by the server due to malformed syntax.</p>
 </body></html>''';
 
-  void onRequest(HttpRequest request, [String badRequestPage = null]){
+  void onRequest(HttpRequest request, [String badRequestPage = null]) {
     if (badRequestPage == null) {
       badRequestPage = badRequestPageHtml;
     }
     request.response
-      ..statusCode = HttpStatus.BAD_REQUEST
+      ..statusCode = HttpStatus.badRequest
       ..headers.set('Content-Type', 'text/html; charset=UTF-8')
       ..write(badRequestPage)
       ..close();
   }
 }
-
 
 class NotFoundHandler {
   String notFoundPage;
@@ -199,32 +192,29 @@ class NotFoundHandler {
 <p>The requested URL or File was not found on this server.</p>
 </body></html>''';
 
-  void onRequest(HttpRequest request, [String notFoundPage = null]){
+  void onRequest(HttpRequest request, [String notFoundPage = null]) {
     if (notFoundPage == null) {
       notFoundPage = notFoundPageHtml;
     }
     request.response
-      ..statusCode = HttpStatus.NOT_FOUND
+      ..statusCode = HttpStatus.notFound
       ..headers.set('Content-Type', 'text/html; charset=UTF-8')
       ..write(notFoundPage)
       ..close();
   }
 }
 
-
 class InitialPageHandler {
-
   void onRequest(HttpRequest request, [String warning = '']) {
     request.response
-    ..headers.set('Content-Type', 'text/html; charset=UTF-8')
-    ..write(createInitialPageHtml(warning).toString())
-    ..close();
+      ..headers.set('Content-Type', 'text/html; charset=UTF-8')
+      ..write(createInitialPageHtml(warning).toString())
+      ..close();
   }
 
-  StringBuffer createInitialPageHtml(String warning){
-  var sb = new StringBuffer('');
-  sb.write(
-      r'''
+  StringBuffer createInitialPageHtml(String warning) {
+    var sb = new StringBuffer('');
+    sb.write(r'''
 <!DOCTYPE html>
 <html>
   <head>
@@ -233,20 +223,18 @@ class InitialPageHandler {
   <body>
     <h1>Request a file</h1>
 ''');
-  if (warning != '') {
-    sb.write('    <br><h2><div style="color:red">$warning</div></h2><br>\n');
-  }
-  sb.write(
-      r'''
+    if (warning != '') {
+      sb.write('    <br><h2><div style="color:red">$warning</div></h2><br>\n');
+    }
+    sb.write(r'''
     <h2>Choose from available files in resources/ directory</h2>
 ''');
-  List<String> fileNames = fileList('resources');
-  fileNames.forEach((f) {
-    var fn = '$f'.replaceFirst('../', '');
-    sb.write('    <a href=http://localhost:8080/fserver/${fn}>$fn<br></a>\n');
-  });
-  sb.write(
-      r'''
+    List<String> fileNames = fileList('resources');
+    fileNames.forEach((f) {
+      var fn = '$f'.replaceFirst('../', '');
+      sb.write('    <a href=http://localhost:8080/fserver/${fn}>$fn<br></a>\n');
+    });
+    sb.write(r'''
     <h2>Or, enter file name to download</h2>
     <form method="get" action="http://localhost:8080/fserver">
       <input type="text" name="fileName" value="resources/readme.txt" size="50">
@@ -256,29 +244,27 @@ class InitialPageHandler {
   </body>
 </html>
 ''');
-  return sb;
+    return sb;
   }
 }
-
 
 // list files in specified path
 List<String> fileList(String pathName) {
   List<String> fileNames = [];
   final directory = new Directory(pathName);
   final List<FileSystemEntity> fileList = directory.listSync(recursive: true);
-  fileList.forEach((file){
+  fileList.forEach((file) {
     if (file is File) {
       fileNames.add(file.path.replaceAll(r'\', '/'));
     }
-   });
+  });
   fileNames.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
   return fileNames;
 }
 
-
 // create log message for the request
 StringBuffer createLogMessage(HttpRequest request, [String bodyString]) {
-  var sb = new StringBuffer( '''request.headers.host : ${request.headers.host}
+  var sb = new StringBuffer('''request.headers.host : ${request.headers.host}
 request.headers.port : ${request.headers.port}
 request.connectionInfo.localPort : ${request.connectionInfo.localPort}
 request.connectionInfo.remoteAddress : ${request.connectionInfo.remoteAddress}
@@ -292,21 +278,23 @@ request.uri.path : ${request.uri.path}
 request.uri.query : ${request.uri.query}
 request.uri.queryParameters :
 ''');
-  request.uri.queryParameters.forEach((key, value){
+  request.uri.queryParameters.forEach((key, value) {
     sb.write("  ${key} : ${value}\n");
   });
   sb.write('''request.cookies :
 ''');
-  request.cookies.forEach((value){
+  request.cookies.forEach((value) {
     sb.write("  ${value.toString()}\n");
   });
   sb.write('''request.headers.expires : ${request.headers.expires}
 request.headers :
   ''');
   var str = request.headers.toString();
-  for (int i = 0; i < str.length - 1; i++){
-    if (str[i] == "\n") { sb.write("\n  ");
-    } else { sb.write(str[i]);
+  for (int i = 0; i < str.length - 1; i++) {
+    if (str[i] == "\n") {
+      sb.write("\n  ");
+    } else {
+      sb.write(str[i]);
     }
   }
   sb.write('''\nrequest.session.id : ${request.session.id}
@@ -324,43 +312,49 @@ requset.session.isNew : ${request.session.isNew}
   return sb;
 }
 
-
 // make safe string buffer data as HTML text
 StringBuffer makeSafe(StringBuffer b) {
   var s = b.toString();
   b = new StringBuffer();
-  for (int i = 0; i < s.length; i++){
-    if (s[i] == '&') { b.write('&amp;');
-    } else if (s[i] == '"') { b.write('&quot;');
-    } else if (s[i] == "'") { b.write('&#39;');
-    } else if (s[i] == '<') { b.write('&lt;');
-    } else if (s[i] == '>') { b.write('&gt;');
-    } else { b.write(s[i]);
+  for (int i = 0; i < s.length; i++) {
+    if (s[i] == '&') {
+      b.write('&amp;');
+    } else if (s[i] == '"') {
+      b.write('&quot;');
+    } else if (s[i] == "'") {
+      b.write('&#39;');
+    } else if (s[i] == '<') {
+      b.write('&lt;');
+    } else if (s[i] == '>') {
+      b.write('&gt;');
+    } else {
+      b.write(s[i]);
     }
   }
   return b;
 }
 
-
 // URL decoder decodes url encoded utf-8 bytes
 // Use this method to decode query string
 // We need this kind of encoder and decoder with optional [encType] argument
-String urlDecode(String s){
+String urlDecode(String s) {
   int i, p, q;
-   var ol = new List<int>();
-   for (i = 0; i < s.length; i++) {
-     if (s[i].codeUnitAt(0) == 0x2b) { ol.add(0x20); // convert + to space
-     } else if (s[i].codeUnitAt(0) == 0x25) { // convert hex bytes to a single byte
-       i++;
-       p = s[i].toUpperCase().codeUnitAt(0) - 0x30;
-       if (p > 9) p = p - 7;
-       i++;
-       q = s[i].toUpperCase().codeUnitAt(0) - 0x30;
-       if (q > 9) q = q - 7;
-       ol.add(p * 16 + q);
-     }
-     else { ol.add(s[i].codeUnitAt(0));
-     }
-   }
-  return UTF8.decode(ol);
+  var ol = new List<int>();
+  for (i = 0; i < s.length; i++) {
+    if (s[i].codeUnitAt(0) == 0x2b) {
+      ol.add(0x20); // convert + to space
+    } else if (s[i].codeUnitAt(0) == 0x25) {
+      // convert hex bytes to a single byte
+      i++;
+      p = s[i].toUpperCase().codeUnitAt(0) - 0x30;
+      if (p > 9) p = p - 7;
+      i++;
+      q = s[i].toUpperCase().codeUnitAt(0) - 0x30;
+      if (q > 9) q = q - 7;
+      ol.add(p * 16 + q);
+    } else {
+      ol.add(s[i].codeUnitAt(0));
+    }
+  }
+  return utf8.decode(ol);
 }
