@@ -1,7 +1,7 @@
 file_server
 ==
  
-**file_server** is a **Dart 2** sample HTTP file server application. Do not use this code without security and stability enhancement for actual applications. This is a code sample and an attachment to the ["Dart Language Gide"](http://www.cresc.co.jp/tech/java/Google_Dart/DartLanguageGuide.pdf) written in Japanese.
+**file_server** is a **Dart 2** sample HTTP file server application. Do not use this code without security and stability enhancement for actual applications. This is a code sample and an attachment to the ["Dart 2 Language Gide"](https://www.cresc.co.jp/tech/java/Google_Dart2/introduction/main_page.html) written in Japanese.
 
 ## Installing  
   1. Download this repository, uncompress and rename the folder to "file_server".
